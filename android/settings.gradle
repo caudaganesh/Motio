@@ -1,0 +1,7 @@
+rootProject.name = 'Motio'
+include ':react-native-tts'
+project(':react-native-tts').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-tts/android')
+
+include ':app'
+include ':react-native-sensor-manager'
+project(':react-native-sensor-manager').projectDir = new File(settingsDir, '../node_modules/react-native-sensor-manager/android')
