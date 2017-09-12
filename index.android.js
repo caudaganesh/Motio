@@ -14,12 +14,16 @@ import {
   Button,
   TouchableOpacity,
   Dimensions,
-  DeviceEventEmitter
+  DeviceEventEmitter,
+  TouchableHighlight,
 } from 'react-native';
 
 import { SensorManager } from 'NativeModules';
-import SlidingUpPanel from 'rn-sliding-up-panel'
+import SlidingUpPanel from 'rn-sliding-up-panel';
 import Tts from 'react-native-tts';
+import { Stopwatch, Timer } from 'react-native-stopwatch-timer';
+import Icon from 'react-native-vector-icons';
+
 const { height } = Dimensions.get('window')
 const firebase = require('firebase');
 const firebaseConfig = {
@@ -34,7 +38,7 @@ export default class Motio extends Component {
 
   static defaultProps = {
     draggableRange: {
-      top: height / 1.5,
+      top: height / 2.5,
       bottom: 120
     }
   }
@@ -43,8 +47,17 @@ export default class Motio extends Component {
     super(props);
     this.state = {
       counter: 0,
-      visible: false
+      visible: false,
+      timerStart: false,
+      stopwatchStart: false,
+      totalDuration: 300000,
+      timerReset: false,
+      stopwatchReset: false
     };
+    this.toggleTimer = this.toggleTimer.bind(this);
+    this.resetTimer = this.resetTimer.bind(this);
+    this.toggleStopwatch = this.toggleStopwatch.bind(this);
+    this.resetStopwatch = this.resetStopwatch.bind(this);
   }
 
   componentWillMount() {
@@ -73,6 +86,26 @@ export default class Motio extends Component {
     console.log("NEXT", nextProps);
   }
 
+  toggleTimer() {
+    this.setState({ timerStart: !this.state.timerStart, timerReset: false });
+  }
+
+  resetTimer() {
+    this.setState({ timerStart: false, timerReset: true });
+  }
+
+  toggleStopwatch() {
+    this.setState({ stopwatchStart: !this.state.stopwatchStart, stopwatchReset: false });
+  }
+
+  resetStopwatch() {
+    this.setState({ stopwatchStart: false, stopwatchReset: true });
+  }
+
+  getFormattedTime(time) {
+    this.currentTime = time;
+  };
+
   render() {
     return (
       <View style={styles.container}>
@@ -81,6 +114,7 @@ export default class Motio extends Component {
             {this.state.counter}
           </Text>
         </View>
+
         <SlidingUpPanel
           visible
           showBackdrop={false}
@@ -88,12 +122,19 @@ export default class Motio extends Component {
           draggableRange={this.props.draggableRange}>
           <View style={styles.panel}>
             <View style={styles.panelHeader}>
-              <Text style={{ color: '#000', fontSize: 25,
-               fontWeight: 'bold',
-               fontFamily: 'monospace' }}>WORKOUT MENU</Text>
+              <Timer totalDuration={this.state.totalDuration} msecs start={this.state.timerStart}
+                reset={this.state.timerReset}
+                options={options}
+                handleFinish={handleTimerComplete}
+                getTime={this.getFormattedTime} />
             </View>
-            <View style={styles.container}>
-              <Text>Bottom Sheet Content</Text>
+            <View style={styles.panelContainer}>
+              <TouchableHighlight onPress={this.toggleTimer}>
+                <Text style={styles.textButton}>{!this.state.timerStart ? "Start" : "Stop"}</Text>
+              </TouchableHighlight>
+              <TouchableHighlight onPress={this.resetTimer}>
+                <Text style={styles.textButton}>Reset</Text>
+              </TouchableHighlight>
             </View>
           </View>
         </SlidingUpPanel>
@@ -102,6 +143,8 @@ export default class Motio extends Component {
     );
   }
 }
+
+const handleTimerComplete = () => alert("Workout complete");
 
 const styles = {
   container: {
@@ -145,7 +188,41 @@ const styles = {
     padding: 8,
     borderRadius: 24,
     zIndex: 1
+  },
+  timerStopwatch: {
+    backgroundColor: '#000',
+    padding: 5,
+    borderRadius: 5,
+    width: 220,
+  },
+  textButton: {
+    fontSize: 30,
+    color: 'white'
+  },
+  icon: {
+    fontSize: 60,
+    color: '#0D47A1'
+  },
+  panelContainer: {
+    alignSelf: 'stretch',
+    flex: 1,
+    alignItems: 'center',
+    backgroundColor: '#ffc425',
   }
 }
+
+const options = {
+  containerOpt: {
+    backgroundColor: 'transparent',
+    padding: 5,
+    borderRadius: 5,
+    width: 220,
+  },
+  text: {
+    fontSize: 30,
+    color: '#FFF',
+    marginLeft: 7,
+  }
+};
 
 AppRegistry.registerComponent('Motio', () => Motio);
