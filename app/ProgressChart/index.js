@@ -20,7 +20,7 @@ class ProgressChart extends React.Component {
       data: {},
       legend: {
         enabled: true,
-        textColor: processColor('red'),
+        textColor: processColor('black'),
         textSize: 12,
         position: 'BELOW_CHART_RIGHT',
         form: 'SQUARE',
@@ -31,8 +31,8 @@ class ProgressChart extends React.Component {
         wordWrapEnabled: true,
         maxSizePercent: 0.5,
         custom: {
-          colors: [processColor('red'), processColor('red')],
-          labels: ['REFER', 'USER',]
+          colors: [processColor('black')],
+          labels: ['WORKOUT PROGRESS',]
         }
       },
       marker: {
@@ -55,32 +55,7 @@ class ProgressChart extends React.Component {
         data: {
           $set: {
             dataSets: [{
-              values: this._randomParabolaValues(size),
-              label: 'refer',
-              config: {
-                lineWidth: 2,
-                drawValues: false,
-                drawCircles: false,
-                highlightColor: processColor('red'),
-                color: processColor('red'),
-                drawFilled: true,
-                fillColor: processColor('blue'),
-                fillAlpha: 60,
-                highlightEnabled: false,
-                dashedLine: {
-                  lineLength: 20,
-                  spaceLength: 20
-                }
-              }
-            }, {
-              values: [
-                {x: 1, y: 11000, marker: "a very long long long long long long long long \nmarker at top left"},
-                {x: 20, y: 90, marker: "eat eat eat, never\n stop eat"},
-                {x: 40, y: -130},
-                {x: 65, y: 11000, marker: "test top center marker"},
-                {x: 70, y: -2000, marker: "eat more"},
-                {x: 90, y: 9000, marker: "your are overweight, eat less"},
-                {x: 100, y: 11000, marker: "test top right marker"}],
+              values:this.props.dataSet,
 
               label: 'user',
               config: {
@@ -89,12 +64,12 @@ class ProgressChart extends React.Component {
                 circleRadius: 5,
                 highlightEnabled: true,
                 drawHighlightIndicators: true,
-                color: processColor('red'),
+                color: processColor('black'),
                 drawFilled: true,
                 valueTextSize:10,
-                fillColor: processColor('red'),
+                fillColor: processColor('black'),
                 fillAlpha: 45,
-                valueFormatter: "$###.0",
+                valueFormatter: "###",
                 circleColor: processColor('red')
               }
             }],
@@ -103,6 +78,43 @@ class ProgressChart extends React.Component {
       })
     );
   }
+
+  
+  componentWillReceiveProps(nextProps) {
+    console.log("propssssssssssss", this.props.dataSet)
+    const size = 80;
+    if(this.props.dataSet) {
+
+        this.setState(
+          update(this.state, {
+            data: {
+              $set: {
+                dataSets: [{
+                  values:this.props.dataSet,
+    
+                  label: 'user',
+                  config: {
+                    lineWidth: 1,
+                    drawValues: true,
+                    circleRadius: 5,
+                    highlightEnabled: true,
+                    drawHighlightIndicators: true,
+                    color: processColor('black'),
+                    drawFilled: true,
+                    valueTextSize:10,
+                    fillColor: processColor('black'),
+                    fillAlpha: 45,
+                    valueFormatter: "###",
+                    circleColor: processColor('red')
+                  }
+                }],
+              }
+            }
+          })
+        );
+    }    
+  }
+  
 
   _randomParabolaValues(size: number) {
     return _.times(size, (index) => {
@@ -120,7 +132,7 @@ class ProgressChart extends React.Component {
   }
 
   render() {
-
+    console.log("aaaaaaaas")
     let borderColor = processColor("black");
     return (
       <View style={{flex: 1}}>
@@ -156,7 +168,7 @@ class ProgressChart extends React.Component {
 
             dragDecelerationEnabled={true}
             dragDecelerationFrictionCoef={0.99}
-            yAxis={{left:{axisMaximum:12000}}}
+            //yAxis={{left:{axisMaximum:12000}}}
 
             keepPositionOnRotation={false}
 

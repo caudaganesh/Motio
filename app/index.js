@@ -63,8 +63,9 @@ class App extends React.Component {
       timerReset: false,
       stopwatchReset: false,
       selectedMenu: {},
+      curTime:'',
       selectedInfo: {},
-      currentTime: '',
+      dataSet:[],
       dataSource: new ListView.DataSource({
         rowHasChanged: (row1, row2) => row1 !== row2,
       }),
@@ -121,9 +122,21 @@ class App extends React.Component {
         });
       });
       const grouped = _.groupBy(items, item => item.createdAt.toDateString());
+      const final_grouped = []
       console.log(grouped)
+      let counter = 0;
+      _.mapValues(grouped, (val, key)=>{
+        counter++;
+        var chartitem = {}
+        chartitem['x'] = counter;
+        chartitem['y'] = _.sumBy(val, 'total');
+        chartitem['marker']= key
+        final_grouped.push(chartitem)
+      })
+      console.log(final_grouped)
       this.setState({
-        savedDataSource: this.state.savedDataSource.cloneWithRows(items)
+        savedDataSource: this.state.savedDataSource.cloneWithRows(items),
+        dataSet:final_grouped
       });
     });
   }
@@ -139,14 +152,14 @@ class App extends React.Component {
   }
 
   saveProgress() {
-    console.log(this)
+    console.log(this.currentTime)
     this.itemsSaved.push({
       Workout: this.state.selectedMenu.title,
       Icon: this.state.selectedMenu.icon,
       Color: this.state.selectedMenu.color,
       Description: this.state.selectedMenu.description,
       Total: this.state.counter,
-      ElapsedTime: this.state.currentTime,
+      TimeElapsed: this.currentTime,
       CreatedAt:new Date().toUTCString()
     });
 
@@ -200,14 +213,18 @@ class App extends React.Component {
     this.setState({ stopwatchStart: false, stopwatchReset: true });
   }
 
-  getFormattedTime(time) {
-    this.currentTime = time;
+  getFormattedTime =(time)=> {
+    this.currentTime = time
   }
 
   render() {
     var savedNavigationView = (
       <View style={{ flex: 1, backgroundColor: '#ffbf00', flexDirection:'column' }}>
-        <ProgressChart style={{flex:1}}/>
+        {this.state.dataSet && this.state.dataSet.length > 0 ? 
+        <ProgressChart 
+        style={{flex:1}}
+        dataSet = {this.state.dataSet}/> : <View/>
+      }
         <ListView
           dataSource={this.state.savedDataSource}
           renderRow={this._renderSavedItem.bind(this)}
@@ -303,7 +320,7 @@ class App extends React.Component {
                     reset={this.state.timerReset}
                     options={options}
                     handleFinish={handleTimerComplete}
-                    getTime={this.getFormattedTime} />
+                    getTime= {this.getFormattedTime}/>
                 </View>
                 <View style={styles.panelContainer}>
                   <TouchableHighlight onPress={this.toggleTimer}>
@@ -355,6 +372,8 @@ class App extends React.Component {
             resizeMode={'stretch'} />
           <View>
             <Text style={styles.totalText}>{item.total}</Text>
+            <Text style={styles.totalText}>{item.createdAt.toLocaleString()}</Text>
+            <Text style={styles.totalText}>{item.timeElapsed}</Text>
           </View>
         </View>
       </TouchableOpacity>
