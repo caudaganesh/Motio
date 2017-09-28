@@ -166,7 +166,9 @@ class App extends React.Component {
     });
 
     this.setState({
-      counter: 0
+      counter: 0,
+      timerReset: true,
+      buttonSaveStatus: true
     })
   }
 
@@ -205,7 +207,7 @@ class App extends React.Component {
   }
 
   resetTimer() {
-    this.setState({ timerStart: false, timerReset: true, buttonSaveStatus: true });
+    this.setState({ timerStart: false, timerReset: true, buttonSaveStatus: true, counter: 0 });
   }
 
   toggleStopwatch() {
@@ -254,7 +256,7 @@ class App extends React.Component {
         <StatusBar hidden />
         <DrawerLayoutAndroid
           drawerWidth={300}
-          drawerLockMode='unlocked'
+          drawerLockMode= {this.currentTime === "00:00:00" || !this.state.timerStart ? 'unlocked' : 'locked-closed'}
           ref={(ref) => this._drawer = ref}
           drawerPosition={DrawerLayoutAndroid.positions.Left}
           renderNavigationView={() => navigationView}>
