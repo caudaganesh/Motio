@@ -169,17 +169,66 @@ var styles = StyleSheet.create({
         borderColor: '#CCC'
     },
     imageContainer: {
-        height: 70,
-        width: 70,
+        height: 40,
+        width: 40,
         borderRadius: 64,
         borderColor: 'black',
-        borderWidth: 3
+        borderWidth: 3,
+        justifyContent: 'center',
+        alignSelf: 'center'
     },
     image: {
         height: 128,
         width: 128,
         borderRadius: 64
     },
+    modal: {
+        padding: 10,
+        margin: 10,
+        backgroundColor: '#ffbf00',
+        elevation: 5
+    },
+    buttonsSection: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        elevation: 3
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        textAlign: 'center',
+    },
+    modalDescription: {
+        margin: 7
+    },
+    modalImage: {
+        height: 40,
+        width: 40,
+        borderRadius: 64,
+        borderColor: 'black',
+        borderWidth: 3
+    },
+    modalTitleIcon: {
+        color: '#000',
+        fontSize: 16,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        justifyContent: 'center',
+        alignSelf: 'center',
+        marginLeft: 10,
+    },
+    modalIcon: {
+        flexDirection: 'row',
+        justifyContent: 'center'
+    },
+    renderItem: {
+        flexDirection: 'row',
+        flex: 1
+    },
+    iconInformation: {
+        justifyContent: 'center',
+        flex: 1
+    }
 })
 
 module.exports = styles
