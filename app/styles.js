@@ -140,7 +140,7 @@ var styles = StyleSheet.create({
         fontWeight: 'bold'
     },
     panelContainer: {
-        alignSelf: 'stretch',
+        flexDirection: 'column',
         flex: 1,
         alignItems: 'center',
         backgroundColor: '#ffbf00',
@@ -228,6 +228,13 @@ var styles = StyleSheet.create({
     iconInformation: {
         justifyContent: 'center',
         flex: 1
+    },
+    button: {
+        elevation: 1,
+        margin: 5,
+        padding: 5,
+        height: 25,
+        alignSelf: 'center'
     }
 })
 
