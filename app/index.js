@@ -16,7 +16,8 @@ import {
   DeviceEventEmitter,
   TouchableHighlight,
   ListView,
-  StatusBar
+  StatusBar,
+  Modal
 } from 'react-native';
 import DrawerLayoutAndroid from 'react-native-drawer-layout';
 import Image from 'react-native-image-progress';
@@ -27,7 +28,7 @@ import { SensorManager } from 'NativeModules';
 import SlidingUpPanel from 'rn-sliding-up-panel';
 import Tts from 'react-native-tts';
 import { Stopwatch, Timer } from 'react-native-stopwatch-timer';
-import Icon from 'react-native-vector-icons';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const { height } = Dimensions.get('window')
 const firebase = require('firebase');
@@ -54,11 +55,13 @@ class App extends React.Component {
     this.state = {
       counter: 0,
       visible: false,
+      invisible: false,
       timerStart: false,
       stopwatchStart: false,
       timerReset: false,
       stopwatchReset: false,
       selectedMenu: {},
+      selectedInfo: {},
       currentTime: '',
       dataSource: new ListView.DataSource({
         rowHasChanged: (row1, row2) => row1 !== row2,
@@ -125,6 +128,11 @@ class App extends React.Component {
     this._drawer.closeDrawer();
   }
 
+  onInfoPressed(item) {
+    this.setState({ selectedInfo: item });
+    this.setState({ invisible: !this.state.invisible });
+  }
+
   saveProgress() {
     console.log(this)
     this.itemsSaved.push({
@@ -164,6 +172,7 @@ class App extends React.Component {
   }
 
   componentDidMount() {
+    this._drawer.openDrawer();
     this.listenForItems(this.itemsRef);
     this.listenForSavedItems(this.itemsSaved)
   }
@@ -231,12 +240,46 @@ class App extends React.Component {
                   source={{ uri: this.state.selectedMenu.icon }}
                   style={styles.imageContainer}
                   resizeMode={'stretch'} />
-                <Text style={styles.titleText}>{this.stafirebaseappte.selectedMenu.title}</Text>
+                <Text style={styles.titleText}>{this.state.selectedMenu.title}</Text>
               </View> : <View />}
             <View style={styles.mainContainer}>
               <Text style={styles.counterText}>
                 {this.state.counter}
               </Text>
+              <Modal
+                
+                animationType='slide'
+                transparent={ true }
+                visible={ this.state.invisible }
+                onRequestClose={() => this.setState({ invisible: !this.state.invisible })}
+              >
+                <View style={ styles.modal }>
+                  <View>
+                    <Text style={ styles.modalTitle }>Workout Information</Text>
+                  </View>
+                  <View style={ styles.modalIcon }>
+                    <Image
+                      source={{ uri: this.state.selectedInfo.icon }}
+                      style={styles.modalImage}
+                      resizeMode={'stretch'}
+                    />
+                    <Text style={styles.modalTitleIcon}>{ this.state.selectedInfo.title }</Text>
+                  </View>
+                  <View style={ styles.modalDescription }>
+                    <Text>{ this.state.selectedInfo.description }</Text>
+                  </View>
+                  <View style={ styles.buttonsSection }>
+                    <Button
+                      bordered
+                      small
+                      transparent
+                      onPress={() => this.setState({ invisible: !this.state.invisible })}
+                    >
+                      <Text>OK</Text>
+                    </Button>
+                  </View>
+                </View>
+              </Modal>
             </View>
             <SlidingUpPanel
               visible
@@ -268,6 +311,7 @@ class App extends React.Component {
               </View>
             </SlidingUpPanel>
           </View>
+          
         </DrawerLayoutAndroid>
       </DrawerLayoutAndroid>
     );
@@ -276,15 +320,20 @@ class App extends React.Component {
 
   _renderItem(item) {
     return (
-      <TouchableOpacity onPress={() => this.onMenuPressed(item)}>
-        <View style={styles.item}>
-          <Image
-            source={{ uri: item.icon }}
-            style={styles.imageContainer}
-            resizeMode={'stretch'} />
-          <Text style={styles.actionText}>{item.title}</Text>
-        </View>
-      </TouchableOpacity>
+      <View style={ styles.renderItem }>
+        <TouchableOpacity onPress={() => this.onMenuPressed(item)} style={{ flex: 5 }}>
+          <View style={styles.item}>
+            <Image
+              source={{ uri: item.icon }}
+              style={styles.imageContainer}
+              resizeMode={'stretch'} />
+            <Text style={styles.actionText}>{item.title}</Text>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => this.onInfoPressed(item)} style={ styles.iconInformation }>
+          <Icon name='info' style={{ fontSize: 20 }}/>
+        </TouchableOpacity>
+      </View>
     );
   }
 
