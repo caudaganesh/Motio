@@ -56,6 +56,8 @@ class App extends React.Component {
       counter: 0,
       visible: false,
       invisible: false,
+      buttonStatus: true,
+      buttonSaveStatus: true,
       timerStart: false,
       stopwatchStart: false,
       timerReset: false,
@@ -124,6 +126,7 @@ class App extends React.Component {
   }
 
   onMenuPressed(item) {
+    this.setState({ buttonStatus: false });    
     this.setState({ selectedMenu: item });
     this._drawer.closeDrawer();
   }
@@ -179,10 +182,11 @@ class App extends React.Component {
 
   toggleTimer() {
     this.setState({ timerStart: !this.state.timerStart, timerReset: false });
+    this.setState({ buttonSaveStatus: !this.state.timerStart });
   }
 
   resetTimer() {
-    this.setState({ timerStart: false, timerReset: true });
+    this.setState({ timerStart: false, timerReset: true, buttonSaveStatus: true });
   }
 
   toggleStopwatch() {
@@ -198,6 +202,7 @@ class App extends React.Component {
   }
 
   render() {
+    console.log('button save', this.state.buttonSaveStatus);
     var savedNavigationView = (
       <View style={{ flex: 1, backgroundColor: '#ffbf00' }}>
         <ListView
@@ -247,7 +252,6 @@ class App extends React.Component {
                 {this.state.counter}
               </Text>
               <Modal
-                
                 animationType='slide'
                 transparent={ true }
                 visible={ this.state.invisible }
@@ -298,13 +302,13 @@ class App extends React.Component {
                     getTime={this.getFormattedTime} />
                 </View>
                 <View style={styles.panelContainer}>
-                  <TouchableHighlight onPress={this.toggleTimer}>
+                  <TouchableHighlight onPress={this.toggleTimer} disabled={ this.state.buttonStatus }>
                     <Text style={styles.textButton}>{!this.state.timerStart ? "START" : "STOP"}</Text>
                   </TouchableHighlight>
-                  <TouchableHighlight onPress={this.resetTimer}>
+                  <TouchableHighlight onPress={this.resetTimer} disabled={ this.state.buttonStatus }>
                     <Text style={styles.textButton}>RESET</Text>
                   </TouchableHighlight>
-                  <TouchableHighlight onPress={() => this.saveProgress()}>
+                  <TouchableHighlight onPress={() => this.saveProgress()} disabled={ this.state.buttonSaveStatus }>
                     <Text style={styles.textButton}>SAVE PROGRESS</Text>
                   </TouchableHighlight>
                 </View>
