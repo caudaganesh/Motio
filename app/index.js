@@ -29,6 +29,8 @@ import SlidingUpPanel from 'rn-sliding-up-panel';
 import Tts from 'react-native-tts';
 import { Stopwatch, Timer } from 'react-native-stopwatch-timer';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import ProgressChart from './ProgressChart';
+import _ from 'lodash';
 
 const { height } = Dimensions.get('window')
 const firebase = require('firebase');
@@ -115,10 +117,13 @@ class App extends React.Component {
           color: child.val().Color,
           description: child.val().Description,
           total: child.val().Total,
+          timeElapsed:child.val().TimeElapsed,
+          createdAt:new Date(child.val().CreatedAt),
           _key: child.key
         });
       });
-
+      const grouped = _.groupBy(items, item => item.createdAt.toDateString());
+      console.log(grouped)
       this.setState({
         savedDataSource: this.state.savedDataSource.cloneWithRows(items)
       });
@@ -144,7 +149,8 @@ class App extends React.Component {
       Color: this.state.selectedMenu.color,
       Description: this.state.selectedMenu.description,
       Total: this.state.counter,
-      Time: this.state.currentTime
+      ElapsedTime: this.state.currentTime,
+      CreatedAt:new Date().toUTCString()
     });
 
     this.setState({
@@ -153,6 +159,7 @@ class App extends React.Component {
   }
 
   componentWillMount() {
+
     console.ignoredYellowBox = [
       'Setting a timer'
     ]
@@ -204,7 +211,8 @@ class App extends React.Component {
   render() {
     console.log('button save', this.state.buttonSaveStatus);
     var savedNavigationView = (
-      <View style={{ flex: 1, backgroundColor: '#ffbf00' }}>
+      <View style={{ flex: 1, backgroundColor: '#ffbf00', flexDirection:'column' }}>
+        <ProgressChart style={{flex:1}}/>
         <ListView
           dataSource={this.state.savedDataSource}
           renderRow={this._renderSavedItem.bind(this)}
