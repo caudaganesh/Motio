@@ -180,6 +180,14 @@ var styles = StyleSheet.create({
         width: 128,
         borderRadius: 64
     },
+    modal: {
+        flex: 1,
+        backgroundColor: 'white',
+        margin: 10
+    },
+    buttonModal: {
+        
+    }
 })
 
 module.exports = styles
