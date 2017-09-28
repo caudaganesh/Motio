@@ -58,6 +58,8 @@ class App extends React.Component {
       counter: 0,
       visible: false,
       invisible: false,
+      buttonStatus: true,
+      buttonSaveStatus: true,
       timerStart: false,
       stopwatchStart: false,
       timerReset: false,
@@ -142,6 +144,7 @@ class App extends React.Component {
   }
 
   onMenuPressed(item) {
+    this.setState({ buttonStatus: false });    
     this.setState({ selectedMenu: item });
     this._drawer.closeDrawer();
   }
@@ -163,7 +166,9 @@ class App extends React.Component {
     });
 
     this.setState({
-      counter: 0
+      counter: 0,
+      timerReset: true,
+      buttonSaveStatus: true
     })
   }
 
@@ -198,10 +203,11 @@ class App extends React.Component {
 
   toggleTimer() {
     this.setState({ timerStart: !this.state.timerStart, timerReset: false });
+    this.setState({ buttonSaveStatus: !this.state.timerStart });
   }
 
   resetTimer() {
-    this.setState({ timerStart: false, timerReset: true });
+    this.setState({ timerStart: false, timerReset: true, buttonSaveStatus: true, counter: 0 });
   }
 
   toggleStopwatch() {
@@ -217,6 +223,7 @@ class App extends React.Component {
   }
 
   render() {
+    console.log('button save', this.state.buttonSaveStatus);
     var savedNavigationView = (
       <View style={{ flex: 1, backgroundColor: '#ffbf00', flexDirection:'column' }}>
         {this.state.dataSet && this.state.dataSet.length > 0 ? 
@@ -249,7 +256,7 @@ class App extends React.Component {
         <StatusBar hidden />
         <DrawerLayoutAndroid
           drawerWidth={300}
-          drawerLockMode='unlocked'
+          drawerLockMode= {this.currentTime === "00:00:00" || !this.state.timerStart ? 'unlocked' : 'locked-closed'}
           ref={(ref) => this._drawer = ref}
           drawerPosition={DrawerLayoutAndroid.positions.Left}
           renderNavigationView={() => navigationView}>
@@ -271,7 +278,6 @@ class App extends React.Component {
                 {this.state.counter}
               </Text>
               <Modal
-                
                 animationType='slide'
                 transparent={ true }
                 visible={ this.state.invisible }
@@ -322,15 +328,33 @@ class App extends React.Component {
                     getTime= {this.getFormattedTime}/>
                 </View>
                 <View style={styles.panelContainer}>
-                  <TouchableHighlight onPress={this.toggleTimer}>
+                  <Button 
+                    transparent dark
+                    small
+                    onPress={this.toggleTimer}
+                    disabled={ this.state.buttonStatus }
+                    style={ styles.button }
+                  >
                     <Text style={styles.textButton}>{!this.state.timerStart ? "START" : "STOP"}</Text>
-                  </TouchableHighlight>
-                  <TouchableHighlight onPress={this.resetTimer}>
+                  </Button>
+                  <Button 
+                    transparent dark
+                    small
+                    onPress={this.resetTimer} 
+                    disabled={ this.state.buttonStatus }
+                    style={ styles.button }
+                  >
                     <Text style={styles.textButton}>RESET</Text>
-                  </TouchableHighlight>
-                  <TouchableHighlight onPress={() => this.saveProgress()}>
+                  </Button>
+                  <Button 
+                    transparent dark
+                    small
+                    onPress={() => this.saveProgress()} 
+                    disabled={ this.state.buttonSaveStatus }
+                    style={ styles.button }
+                  >
                     <Text style={styles.textButton}>SAVE PROGRESS</Text>
-                  </TouchableHighlight>
+                  </Button>
                 </View>
               </View>
             </SlidingUpPanel>
