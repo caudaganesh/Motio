@@ -9,14 +9,17 @@ import React, { Component } from 'react';
 import {
   AppRegistry,
   StyleSheet,
-  Text,
   View,
-  Button,
   TouchableOpacity,
   Dimensions,
   DeviceEventEmitter,
   TouchableHighlight,
+  ListView
 } from 'react-native';
+import DrawerLayoutAndroid from 'react-native-drawer-layout';
+import Image from 'react-native-image-progress';
+import GridView from 'react-native-easy-gridview'
+import { Container, Header, Content, Card, CardItem, Thumbnail, Text, Button, Left, Body, Right } from 'native-base';
 
 import { SensorManager } from 'NativeModules';
 import SlidingUpPanel from 'rn-sliding-up-panel';
@@ -33,6 +36,7 @@ const firebaseConfig = {
   storageBucket: "motio-f5848.appspot.com",
 };
 const firebaseApp = firebase.initializeApp(firebaseConfig);
+const styles = require('./styles.js')
 
 export default class Motio extends Component {
 
@@ -50,25 +54,99 @@ export default class Motio extends Component {
       visible: false,
       timerStart: false,
       stopwatchStart: false,
-      totalDuration: 300000,
       timerReset: false,
-      stopwatchReset: false
+      stopwatchReset: false,
+      selectedMenu: {},
+      currentTime: '',
+      dataSource: new ListView.DataSource({
+        rowHasChanged: (row1, row2) => row1 !== row2,
+      }),
+      savedDataSource: new ListView.DataSource({
+        rowHasChanged: (row1, row2) => row1 !== row2,
+      })
     };
     this.toggleTimer = this.toggleTimer.bind(this);
     this.resetTimer = this.resetTimer.bind(this);
     this.toggleStopwatch = this.toggleStopwatch.bind(this);
     this.resetStopwatch = this.resetStopwatch.bind(this);
+    this.itemsRef = this.getRef().child('workout_menu');
+    this.itemsSaved = this.getRef().child('saved');
+  }
+
+  getRef() {
+    return firebaseApp.database().ref();
+  }
+
+  listenForItems(itemsRef) {
+    itemsRef.on('value', (snap) => {
+      // get children as an array
+      var items = [];
+      snap.forEach((child) => {
+        items.push({
+          title: child.val().Workout,
+          icon: child.val().Icon,
+          color: child.val().Color,
+          description: child.val().Description,
+          _key: child.key
+        });
+      });
+      this.setState({
+        dataSource: this.state.dataSource.cloneWithRows(items)
+      });
+
+    });
+  }
+
+  listenForSavedItems(itemsSaved) {
+    itemsSaved.on('value', (snap) => {
+      // get children as an array
+      var items = [];
+      snap.forEach((child) => {
+        items.push({
+          title: child.val().Workout,
+          icon: child.val().Icon,
+          color: child.val().Color,
+          description: child.val().Description,
+          total: child.val().Total,
+          _key: child.key
+        });
+      });
+
+      this.setState({
+        savedDataSource: this.state.savedDataSource.cloneWithRows(items)
+      });
+    });
+  }
+
+  onMenuPressed(item) {
+    this.setState({ selectedMenu: item });
+    this._drawer.closeDrawer();
+  }
+
+  saveProgress() {
+    console.log(this)
+    this.itemsSaved.push({
+      Workout: this.state.selectedMenu.title,
+      Icon: this.state.selectedMenu.icon,
+      Color: this.state.selectedMenu.color,
+      Description: this.state.selectedMenu.description,
+      Total: this.state.counter,
+      Time: this.state.currentTime
+    });
+
+    this.setState({
+      counter: 0
+    })
   }
 
   componentWillMount() {
-
     SensorManager.startProximity(20);
     DeviceEventEmitter.addListener('Proximity', (data) => {
       /**
-      * data.isNear: [Boolean] A flag representing whether something is near the screen.
-      * data.value: [Number] The raw value returned by the sensor (usually distance in cm).
-      * data.maxRange: [Number] The maximum range of the sensor.
-      **/
+       * data.isNear: [Boolean] A flag representing whether something is near the screen.
+       * data.value: [Number] The raw value returned by the sensor (usually distance in cm).
+       * data.maxRange: [Number] The maximum range of the sensor.
+       **/
       if (data.value === 0) {
 
         this.setState({
@@ -80,10 +158,9 @@ export default class Motio extends Component {
     });
   }
 
-
-
-  componentWillReceiveProps(nextProps) {
-    console.log("NEXT", nextProps);
+  componentDidMount() {
+    this.listenForItems(this.itemsRef);
+    this.listenForSavedItems(this.itemsSaved)
   }
 
   toggleTimer() {
@@ -104,112 +181,125 @@ export default class Motio extends Component {
 
   getFormattedTime(time) {
     this.currentTime = time;
-  };
+  }
 
   render() {
-    return (
-      <View style={styles.container}>
-        <View style={styles.mainContainer}>
-          <Text style={styles.counterText}>
-            {this.state.counter}
-          </Text>
-        </View>
-
-        <SlidingUpPanel
-          visible
-          showBackdrop={false}
-          ref={(c) => { this._panel = c }}
-          draggableRange={this.props.draggableRange}>
-          <View style={styles.panel}>
-            <View style={styles.panelHeader}>
-              <Timer totalDuration={this.state.totalDuration} msecs start={this.state.timerStart}
-                reset={this.state.timerReset}
-                options={options}
-                handleFinish={handleTimerComplete}
-                getTime={this.getFormattedTime} />
-            </View>
-            <View style={styles.panelContainer}>
-              <TouchableHighlight onPress={this.toggleTimer}>
-                <Text style={styles.textButton}>{!this.state.timerStart ? "Start" : "Stop"}</Text>
-              </TouchableHighlight>
-              <TouchableHighlight onPress={this.resetTimer}>
-                <Text style={styles.textButton}>Reset</Text>
-              </TouchableHighlight>
-            </View>
-          </View>
-        </SlidingUpPanel>
+    var savedNavigationView = (
+      <View style={{ flex: 1, backgroundColor: '#ffbf00' }}>
+        <ListView
+          dataSource={this.state.savedDataSource}
+          renderRow={this._renderSavedItem.bind(this)}
+          removeClippedSubviews={false} />
       </View>
+    );
 
+    var navigationView = (
+      <View style={{ flex: 1, backgroundColor: '#ffbf00' }}>
+        <ListView
+          dataSource={this.state.dataSource}
+          renderRow={this._renderItem.bind(this)}
+          removeClippedSubviews={false} />
+      </View>
+    );
+    return (
+      <DrawerLayoutAndroid
+        drawerWidth={300}
+        drawerLockMode='unlocked'
+        ref={(ref) => this._savedDrawer = ref}
+        drawerPosition={DrawerLayoutAndroid.positions.Right}
+        renderNavigationView={() => savedNavigationView}>
+        <DrawerLayoutAndroid
+          drawerWidth={300}
+          drawerLockMode='unlocked'
+          ref={(ref) => this._drawer = ref}
+          drawerPosition={DrawerLayoutAndroid.positions.Left}
+          renderNavigationView={() => navigationView}>
+          <View style={styles.container}>
+            {Object.keys(this.state.selectedMenu).length !== 0 && this.state.selectedMenu.constructor === Object ?
+              <View style={{
+                backgroundColor: '#ffbf00',
+                padding: 20,
+                flexDirection: 'row'
+              }}>
+                <Image
+                  source={{ uri: this.state.selectedMenu.icon }}
+                  style={styles.imageContainer}
+                  resizeMode={'stretch'} />
+                <Text style={styles.titleText}>{this.state.selectedMenu.title}</Text>
+              </View> : <View />}
+            <View style={styles.mainContainer}>
+              <Text style={styles.counterText}>
+                {this.state.counter}
+              </Text>
+            </View>
+            <SlidingUpPanel
+              visible
+              showBackdrop={false}
+              ref={(c) => { this._panel = c }}
+              draggableRange={this.props.draggableRange}
+              style={{ flex: 1 }}>
+              <View style={styles.panel}>
+                <View style={styles.panelHeader}>
+                  <Stopwatch
+                    start={this.state.timerStart}
+                    msecs={false}
+                    reset={this.state.timerReset}
+                    options={options}
+                    handleFinish={handleTimerComplete}
+                    getTime={this.getFormattedTime} />
+                </View>
+                <View style={styles.panelContainer}>
+                  <TouchableHighlight onPress={this.toggleTimer}>
+                    <Text style={styles.textButton}>{!this.state.timerStart ? "START" : "STOP"}</Text>
+                  </TouchableHighlight>
+                  <TouchableHighlight onPress={this.resetTimer}>
+                    <Text style={styles.textButton}>RESET</Text>
+                  </TouchableHighlight>
+                  <TouchableHighlight onPress={() => this.saveProgress()}>
+                    <Text style={styles.textButton}>SAVE PROGRESS</Text>
+                  </TouchableHighlight>
+                </View>
+              </View>
+            </SlidingUpPanel>
+          </View>
+        </DrawerLayoutAndroid>
+      </DrawerLayoutAndroid>
+    );
+  }
+
+
+  _renderItem(item) {
+    return (
+      <TouchableOpacity onPress={() => this.onMenuPressed(item)}>
+        <View style={styles.item}>
+          <Image
+            source={{ uri: item.icon }}
+            style={styles.imageContainer}
+            resizeMode={'stretch'} />
+          <Text style={styles.actionText}>{item.title}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  }
+
+  _renderSavedItem(item) {
+    return (
+      <TouchableOpacity onPress={() => this.onMenuPressed(item)}>
+        <View style={styles.item}>
+          <Image
+            source={{ uri: item.icon }}
+            style={styles.imageContainer}
+            resizeMode={'stretch'} />
+          <View>
+            <Text style={styles.totalText}>{item.total}</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
     );
   }
 }
 
 const handleTimerComplete = () => alert("Workout complete");
-
-const styles = {
-  container: {
-    flex: 1,
-    flexDirection: 'column',
-    backgroundColor: '#ffc425',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  mainContainer: {
-    alignSelf: 'stretch',
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#000000',
-  },
-  counterText: {
-    fontSize: 70,
-    fontFamily: 'monospace',
-    fontWeight: 'bold',
-    color: '#ffbf00'
-  },
-  panel: {
-    flex: 1,
-    backgroundColor: 'white',
-    position: 'relative'
-  },
-  panelHeader: {
-    height: 120,
-    backgroundColor: '#ffbf00',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  favoriteIcon: {
-    position: 'absolute',
-    top: -24,
-    right: 24,
-    backgroundColor: '#2b8a3e',
-    width: 48,
-    height: 48,
-    padding: 8,
-    borderRadius: 24,
-    zIndex: 1
-  },
-  timerStopwatch: {
-    backgroundColor: '#000',
-    padding: 5,
-    borderRadius: 5,
-    width: 220,
-  },
-  textButton: {
-    fontSize: 30,
-    color: 'white'
-  },
-  icon: {
-    fontSize: 60,
-    color: '#0D47A1'
-  },
-  panelContainer: {
-    alignSelf: 'stretch',
-    flex: 1,
-    alignItems: 'center',
-    backgroundColor: '#ffc425',
-  }
-}
 
 const options = {
   containerOpt: {
@@ -220,9 +310,12 @@ const options = {
   },
   text: {
     fontSize: 30,
-    color: '#FFF',
+    color: '#000',
     marginLeft: 7,
+    fontWeight: 'bold'
   }
 };
+
+
 
 AppRegistry.registerComponent('Motio', () => Motio);
