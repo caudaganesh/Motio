@@ -14,7 +14,8 @@ import {
   Dimensions,
   DeviceEventEmitter,
   TouchableHighlight,
-  ListView
+  ListView,
+  Modal
 } from 'react-native';
 import DrawerLayoutAndroid from 'react-native-drawer-layout';
 import Image from 'react-native-image-progress';
@@ -52,6 +53,7 @@ export default class Motio extends Component {
     this.state = {
       counter: 0,
       visible: false,
+      invisible: false,
       timerStart: false,
       stopwatchStart: false,
       timerReset: false,
@@ -120,7 +122,9 @@ export default class Motio extends Component {
 
   onMenuPressed(item) {
     this.setState({ selectedMenu: item });
+    console.log("CLICKED", item);
     this._drawer.closeDrawer();
+    this.setState({ invisible: !this.state.invisible });
   }
 
   saveProgress() {
@@ -261,6 +265,19 @@ export default class Motio extends Component {
                 </View>
               </View>
             </SlidingUpPanel>
+            <Modal
+              animationType='slide'
+              transparent={ true }
+              visible={ this.state.invisible }
+              onRequestClose={ () => this.setState({ invisible: !this.state.invisible }) }
+            >
+              <View style={ styles.modal }>
+                <Text>{ this.state.selectedMenu.description }</Text>
+                <TouchableOpacity onPress={() => this.setState({ invisible: !this.state.invisible })}>
+                    <Text>OK</Text>
+                </TouchableOpacity>
+              </View>
+            </Modal>
           </View>
         </DrawerLayoutAndroid>
       </DrawerLayoutAndroid>
