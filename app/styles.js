@@ -106,11 +106,11 @@ var styles = StyleSheet.create({
     },
     totalText: {
         color: '#000',
-        fontSize: 40,
+        fontSize: 15,
         fontWeight: 'bold',
-        textAlign: 'center',
-        justifyContent: 'center',
-        alignSelf: 'center',
+        textAlign: 'left',
+        justifyContent: 'flex-start',
+        alignSelf: 'flex-start',
         marginLeft: 20,
     },
     titleText: {
@@ -169,8 +169,8 @@ var styles = StyleSheet.create({
         borderColor: '#CCC'
     },
     imageContainer: {
-        height: 40,
-        width: 40,
+        height: 60,
+        width: 60,
         borderRadius: 64,
         borderColor: 'black',
         borderWidth: 3,
