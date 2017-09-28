@@ -310,15 +310,33 @@ class App extends React.Component {
                     getTime={this.getFormattedTime} />
                 </View>
                 <View style={styles.panelContainer}>
-                  <TouchableHighlight onPress={this.toggleTimer} disabled={ this.state.buttonStatus }>
+                  <Button 
+                    transparent dark
+                    small
+                    onPress={this.toggleTimer}
+                    disabled={ this.state.buttonStatus }
+                    style={ styles.button }
+                  >
                     <Text style={styles.textButton}>{!this.state.timerStart ? "START" : "STOP"}</Text>
-                  </TouchableHighlight>
-                  <TouchableHighlight onPress={this.resetTimer} disabled={ this.state.buttonStatus }>
+                  </Button>
+                  <Button 
+                    transparent dark
+                    small
+                    onPress={this.resetTimer} 
+                    disabled={ this.state.buttonStatus }
+                    style={ styles.button }
+                  >
                     <Text style={styles.textButton}>RESET</Text>
-                  </TouchableHighlight>
-                  <TouchableHighlight onPress={() => this.saveProgress()} disabled={ this.state.buttonSaveStatus }>
+                  </Button>
+                  <Button 
+                    transparent dark
+                    small
+                    onPress={() => this.saveProgress()} 
+                    disabled={ this.state.buttonSaveStatus }
+                    style={ styles.button }
+                  >
                     <Text style={styles.textButton}>SAVE PROGRESS</Text>
-                  </TouchableHighlight>
+                  </Button>
                 </View>
               </View>
             </SlidingUpPanel>
