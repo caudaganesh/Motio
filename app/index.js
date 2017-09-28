@@ -152,7 +152,6 @@ class App extends React.Component {
   }
 
   saveProgress() {
-    console.log(this.currentTime)
     this.itemsSaved.push({
       Workout: this.state.selectedMenu.title,
       Icon: this.state.selectedMenu.icon,
@@ -371,7 +370,7 @@ class App extends React.Component {
             style={styles.imageContainer}
             resizeMode={'stretch'} />
           <View>
-            <Text style={styles.totalText}>{item.total}</Text>
+            <Text style={styles.totalText}>{item.total} times</Text>
             <Text style={styles.totalText}>{item.createdAt.toLocaleString()}</Text>
             <Text style={styles.totalText}>{item.timeElapsed}</Text>
           </View>
