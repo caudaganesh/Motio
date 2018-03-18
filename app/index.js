@@ -9,28 +9,26 @@
 import React, { Component } from 'react';
 import {
   AppRegistry,
-  StyleSheet,
   View,
   TouchableOpacity,
   Dimensions,
   DeviceEventEmitter,
-  TouchableHighlight,
   ListView,
   StatusBar,
   Modal
 } from 'react-native';
 import DrawerLayoutAndroid from 'react-native-drawer-layout';
 import Image from 'react-native-image-progress';
-import GridView from 'react-native-easy-gridview'
-import { Container, Header, Content, Card, CardItem, Thumbnail, Text, Button, Left, Body, Right } from 'native-base';
-
+import { Text, Button } from 'native-base';
 import { SensorManager } from 'NativeModules';
 import SlidingUpPanel from 'rn-sliding-up-panel';
 import Tts from 'react-native-tts';
-import { Stopwatch, Timer } from 'react-native-stopwatch-timer';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import ProgressChart from './ProgressChart';
 import _ from 'lodash';
+
+import ProgressChart from './ProgressChart';
+import SlidingUpModalMenu from './SlidingUpModalMenu';
+import styles from "./styles"
 
 const { height } = Dimensions.get('window')
 const firebase = require('firebase');
@@ -41,9 +39,8 @@ const firebaseConfig = {
   storageBucket: "motio-f5848.appspot.com",
 };
 const firebaseApp = firebase.initializeApp(firebaseConfig);
-const styles = require('./styles.js')
 
-class App extends React.Component {
+class App extends Component {
 
   static defaultProps = {
     draggableRange: {
@@ -65,9 +62,9 @@ class App extends React.Component {
       timerReset: false,
       stopwatchReset: false,
       selectedMenu: {},
-      curTime:'',
+      curTime: '',
       selectedInfo: {},
-      dataSet:[],
+      dataSet: [],
       dataSource: new ListView.DataSource({
         rowHasChanged: (row1, row2) => row1 !== row2,
       }),
@@ -118,33 +115,31 @@ class App extends React.Component {
           color: child.val().Color,
           description: child.val().Description,
           total: child.val().Total,
-          timeElapsed:child.val().TimeElapsed,
-          createdAt:new Date(child.val().CreatedAt),
+          timeElapsed: child.val().TimeElapsed,
+          createdAt: new Date(child.val().CreatedAt),
           _key: child.key
         });
       });
       const grouped = _.groupBy(items, item => item.createdAt.toDateString());
       const final_grouped = []
-      console.log(grouped)
       let counter = 0;
-      _.mapValues(grouped, (val, key)=>{
+      _.mapValues(grouped, (val, key) => {
         counter++;
         var chartitem = {}
         chartitem['x'] = counter;
         chartitem['y'] = _.sumBy(val, 'total');
-        chartitem['marker']= key
+        chartitem['marker'] = key
         final_grouped.push(chartitem)
       })
-      console.log(final_grouped)
       this.setState({
         savedDataSource: this.state.savedDataSource.cloneWithRows(items),
-        dataSet:final_grouped
+        dataSet: final_grouped
       });
     });
   }
 
   onMenuPressed(item) {
-    this.setState({ buttonStatus: false });    
+    this.setState({ buttonStatus: false });
     this.setState({ selectedMenu: item });
     this._drawer.closeDrawer();
   }
@@ -156,13 +151,13 @@ class App extends React.Component {
 
   saveProgress() {
     this.itemsSaved.push({
-      Workout: this.state.selectedMenu.title,
-      Icon: this.state.selectedMenu.icon,
-      Color: this.state.selectedMenu.color,
-      Description: this.state.selectedMenu.description,
+      Workout: selectedMenu.title,
+      Icon: selectedMenu.icon,
+      Color: selectedMenu.color,
+      Description: selectedMenu.description,
       Total: this.state.counter,
       TimeElapsed: this.currentTime,
-      CreatedAt:new Date().toUTCString()
+      CreatedAt: new Date().toUTCString()
     });
 
     this.setState({
@@ -173,10 +168,6 @@ class App extends React.Component {
   }
 
   componentWillMount() {
-
-    console.ignoredYellowBox = [
-      'Setting a timer'
-    ]
     SensorManager.startProximity(20);
     DeviceEventEmitter.addListener('Proximity', (data) => {
       /**
@@ -184,13 +175,13 @@ class App extends React.Component {
        * data.value: [Number] The raw value returned by the sensor (usually distance in cm).
        * data.maxRange: [Number] The maximum range of the sensor.
        **/
+      let { counter } = this.state
       if (data.value === 0) {
-
         this.setState({
-          counter: this.state.counter += 1
+          counter: counter += 1
         })
         Tts.setDefaultRate(0.33);
-        Tts.speak(this.state.counter.toString());
+        Tts.speak(counter.toString());
       }
     });
   }
@@ -218,21 +209,22 @@ class App extends React.Component {
     this.setState({ stopwatchStart: false, stopwatchReset: true });
   }
 
-  getFormattedTime =(time)=> {
+  getFormattedTime = (time) => {
     this.currentTime = time
   }
 
   render() {
-    console.log('button save', this.state.buttonSaveStatus);
+
+    const { dataSet, dataSource, savedDataSource } = this.state;
     var savedNavigationView = (
-      <View style={{ flex: 1, backgroundColor: '#ffbf00', flexDirection:'column' }}>
-        {this.state.dataSet && this.state.dataSet.length > 0 ? 
-        <ProgressChart 
-        style={{flex:1}}
-        dataSet = {this.state.dataSet}/> : <View/>
-      }
+      <View style={styles.savedNavigationView}>
+        {dataSet && dataSet.length > 0 ?
+          <ProgressChart
+            style={{ flex: 1 }}
+            dataSet={dataSet} /> : <View />
+        }
         <ListView
-          dataSource={this.state.savedDataSource}
+          dataSource={savedDataSource}
           renderRow={this._renderSavedItem.bind(this)}
           removeClippedSubviews={false} />
       </View>
@@ -241,11 +233,14 @@ class App extends React.Component {
     var navigationView = (
       <View style={{ flex: 1, backgroundColor: '#ffbf00' }}>
         <ListView
-          dataSource={this.state.dataSource}
+          dataSource={dataSource}
           renderRow={this._renderItem.bind(this)}
           removeClippedSubviews={false} />
       </View>
     );
+
+    const { selectedMenu, selectedInfo, timerStart, timerReset, buttonStatus, buttonSaveStatus } = this.state
+    const { saveProgress, resetTimer, toggleTimer, getFormattedTime } = this
     return (
       <DrawerLayoutAndroid
         drawerWidth={300}
@@ -256,22 +251,22 @@ class App extends React.Component {
         <StatusBar hidden />
         <DrawerLayoutAndroid
           drawerWidth={300}
-          drawerLockMode= {this.currentTime === "00:00:00" || !this.state.timerStart ? 'unlocked' : 'locked-closed'}
+          drawerLockMode={this.currentTime === "00:00:00" || !this.state.timerStart ? 'unlocked' : 'locked-closed'}
           ref={(ref) => this._drawer = ref}
           drawerPosition={DrawerLayoutAndroid.positions.Left}
           renderNavigationView={() => navigationView}>
           <View style={styles.container}>
-            {Object.keys(this.state.selectedMenu).length !== 0 && this.state.selectedMenu.constructor === Object ?
+            {Object.keys(selectedMenu).length !== 0 && selectedMenu.constructor === Object ?
               <View style={{
                 backgroundColor: '#ffbf00',
                 padding: 20,
                 flexDirection: 'row'
               }}>
                 <Image
-                  source={{ uri: this.state.selectedMenu.icon }}
+                  source={{ uri: selectedMenu.icon }}
                   style={styles.imageContainer}
                   resizeMode={'stretch'} />
-                <Text style={styles.titleText}>{this.state.selectedMenu.title}</Text>
+                <Text style={styles.titleText}>{selectedMenu.title}</Text>
               </View> : <View />}
             <View style={styles.mainContainer}>
               <Text style={styles.counterText}>
@@ -279,26 +274,26 @@ class App extends React.Component {
               </Text>
               <Modal
                 animationType='slide'
-                transparent={ true }
-                visible={ this.state.invisible }
+                transparent={true}
+                visible={this.state.invisible}
                 onRequestClose={() => this.setState({ invisible: !this.state.invisible })}
               >
-                <View style={ styles.modal }>
+                <View style={styles.modal}>
                   <View>
-                    <Text style={ styles.modalTitle }>Workout Information</Text>
+                    <Text style={styles.modalTitle}>Workout Information</Text>
                   </View>
-                  <View style={ styles.modalIcon }>
+                  <View style={styles.modalIcon}>
                     <Image
-                      source={{ uri: this.state.selectedInfo.icon }}
+                      source={{ uri: selectedInfo.icon }}
                       style={styles.modalImage}
                       resizeMode={'stretch'}
                     />
-                    <Text style={styles.modalTitleIcon}>{ this.state.selectedInfo.title }</Text>
+                    <Text style={styles.modalTitleIcon}>{selectedInfo.title}</Text>
                   </View>
-                  <View style={ styles.modalDescription }>
-                    <Text>{ this.state.selectedInfo.description }</Text>
+                  <View style={styles.modalDescription}>
+                    <Text>{selectedInfo.description}</Text>
                   </View>
-                  <View style={ styles.buttonsSection }>
+                  <View style={styles.buttonsSection}>
                     <Button
                       bordered
                       small
@@ -317,58 +312,28 @@ class App extends React.Component {
               ref={(c) => { this._panel = c }}
               draggableRange={this.props.draggableRange}
               style={{ flex: 1 }}>
-              <View style={styles.panel}>
-                <View style={styles.panelHeader}>
-                  <Stopwatch
-                    start={this.state.timerStart}
-                    msecs={false}
-                    reset={this.state.timerReset}
-                    options={options}
-                    handleFinish={handleTimerComplete}
-                    getTime= {this.getFormattedTime}/>
-                </View>
-                <View style={styles.panelContainer}>
-                  <Button 
-                    transparent dark
-                    small
-                    onPress={this.toggleTimer}
-                    disabled={ this.state.buttonStatus }
-                    style={ styles.button }
-                  >
-                    <Text style={styles.textButton}>{!this.state.timerStart ? "START" : "STOP"}</Text>
-                  </Button>
-                  <Button 
-                    transparent dark
-                    small
-                    onPress={this.resetTimer} 
-                    disabled={ this.state.buttonStatus }
-                    style={ styles.button }
-                  >
-                    <Text style={styles.textButton}>RESET</Text>
-                  </Button>
-                  <Button 
-                    transparent dark
-                    small
-                    onPress={() => this.saveProgress()} 
-                    disabled={ this.state.buttonSaveStatus }
-                    style={ styles.button }
-                  >
-                    <Text style={styles.textButton}>SAVE PROGRESS</Text>
-                  </Button>
-                </View>
-              </View>
+              <SlidingUpModalMenu
+                buttonStatus={buttonStatus}
+                buttonSaveStatus={buttonSaveStatus}
+                timerReset={timerReset}
+                timerStart={timerStart}
+                saveProgress={() => saveProgress()}
+                getFormattedTime={getFormattedTime}
+                toggleTimer={toggleTimer}
+                resetTimer={resetTimer}
+                handleTimerComplete={handleTimerComplete}
+              />
             </SlidingUpPanel>
           </View>
-          
+
         </DrawerLayoutAndroid>
       </DrawerLayoutAndroid>
     );
   }
 
-
   _renderItem(item) {
     return (
-      <View style={ styles.renderItem }>
+      <View style={styles.renderItem}>
         <TouchableOpacity onPress={() => this.onMenuPressed(item)} style={{ flex: 5 }}>
           <View style={styles.item}>
             <Image
@@ -378,8 +343,8 @@ class App extends React.Component {
             <Text style={styles.actionText}>{item.title}</Text>
           </View>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => this.onInfoPressed(item)} style={ styles.iconInformation }>
-          <Icon name='info' style={{ fontSize: 20 }}/>
+        <TouchableOpacity onPress={() => this.onInfoPressed(item)} style={styles.iconInformation}>
+          <Icon name='info' style={{ fontSize: 20 }} />
         </TouchableOpacity>
       </View>
     );
@@ -405,21 +370,6 @@ class App extends React.Component {
 }
 
 const handleTimerComplete = () => alert("Workout complete");
-
-const options = {
-  containerOpt: {
-    backgroundColor: 'transparent',
-    padding: 5,
-    borderRadius: 5,
-    width: 220,
-  },
-  text: {
-    fontSize: 30,
-    color: '#000',
-    marginLeft: 7,
-    fontWeight: 'bold'
-  }
-};
 
 
 AppRegistry.registerComponent('Motio', () => App);
