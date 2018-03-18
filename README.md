@@ -14,6 +14,20 @@ Motio is a healthcare companion app, using the sensors on your device you can co
 - start packager with `react-native start`, `yarn start` or `npm start`
 - run `react-native run-android` or `react-native run-ios` to deploy it to emulator / device
 
+## Environment 
+
+- Copy and rename `local.example.js` to `local.js`
+- Add these lines to `local.js` 
+
+`
+export const firebaseConfig = {
+    apiKey: "<YOUR API KEY>",
+    authDomain: "<YOUR AUTH DOMAIN>",
+    databaseURL: "<YOUR DATABASE URL>",
+    storageBucket: "<YOUR STORAGE BUCKET>",
+};
+` 
+- Replace everything inside the "" with your own firebase config 
 
 ## Linting
 

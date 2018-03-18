@@ -54,3 +54,4 @@ fastlane/screenshots
 
 #vscode
 .vscode
+app/config/local.js
