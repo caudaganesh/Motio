@@ -18,15 +18,15 @@ Motio is a healthcare companion app, using the sensors on your device you can co
 
 - Copy and rename `local.example.js` to `local.js`
 - Add these lines to `local.js` 
-
-`
+```
 export const firebaseConfig = {
-    apiKey: "<YOUR API KEY>",
+    apiKey: "<YOUR API KEY>",    
     authDomain: "<YOUR AUTH DOMAIN>",
     databaseURL: "<YOUR DATABASE URL>",
-    storageBucket: "<YOUR STORAGE BUCKET>",
+    storageBucket: "<YOUR STORAGE BUCKET>"
 };
-` 
+```
+
 - Replace everything inside the "" with your own firebase config 
 
 ## Linting
