@@ -26,6 +26,10 @@ var styles = StyleSheet.create({
         marginBottom: 80,
         backgroundColor: '#000000',
     },
+    savedNavigationView: {
+        flex: 1, backgroundColor: '#ffbf00',
+        flexDirection: 'column'
+    },
     counterText: {
         fontSize: 90,
         alignSelf: 'stretch',
