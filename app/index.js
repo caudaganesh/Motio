@@ -26,18 +26,14 @@ import Tts from 'react-native-tts';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import _ from 'lodash';
 
-import ProgressChart from './ProgressChart';
-import SlidingUpModalMenu from './SlidingUpModalMenu';
+import ProgressChart from './components/ProgressChart';
+import SlidingUpModalMenu from './components/SlidingUpModalMenu';
+import { firebaseConfig } from './config/local'
 import styles from "./styles"
 
 const { height } = Dimensions.get('window')
 const firebase = require('firebase');
-const firebaseConfig = {
-  apiKey: "AIzaSyBZNtefjbHz2-N2CLJyQJRN_t_TnCCfYU0",
-  authDomain: "motio-f5848.firebaseapp.com",
-  databaseURL: "https://motio-f5848.firebaseio.com",
-  storageBucket: "motio-f5848.appspot.com",
-};
+
 const firebaseApp = firebase.initializeApp(firebaseConfig);
 
 class App extends Component {
